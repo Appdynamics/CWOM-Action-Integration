@@ -1,0 +1,17 @@
+node_modules/
+npm-debug.log
+lib
+config.json
+.idea/
+.DS_Store
+.settings
+data/
+logs
+log
+bower_components
+.package-lock.json
+.vscode
+public/_design
+views/_design
+
+CONFIG.BAK

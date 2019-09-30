@@ -1,0 +1,24 @@
+#!/usr/bin/env node
+var configManager = require('../src/ConfigManager');
+var app = require('../app');
+var server = require('http').Server(app);
+
+app.set('port', process.env.PORT || configManager.getLocalPort());
+
+/**
+ * make a log directory, just in case it isn't there.
+ */
+try {
+  require('fs').mkdirSync('./log');
+} catch (e) {
+  if (e.code != 'EEXIST') {
+    console.error("Could not set up log directory, error was: ", e);
+    process.exit(1);
+  }
+}
+
+var log4js = require('log4js');
+log4js.configure('./log4js.json');
+var log = log4js.getLogger("startup");
+
+server.listen(configManager.getLocalPort());
