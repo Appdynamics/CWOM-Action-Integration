@@ -52,7 +52,8 @@ If you copy the above default text, you can still run the node.js server. cwom_c
 
 
 # Documentation
-Example page with real action data: http://localhost:3000/views/examples/cwom.html
+Example page with real action data: http://localhost:3000/views/examples/cwom.html 
+
 Example page with fake action data for demo purposes (if you don't have a cwom instance to hook into): http://localhost:3000/views/examples/cwomMockData.html.html
 
 # AppDynamics Dashboard
