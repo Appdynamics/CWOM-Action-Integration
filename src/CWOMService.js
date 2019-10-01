@@ -2,7 +2,7 @@ var rp = require('request-promise').defaults({ jar: true });
 var configManager = require("./ConfigManager.js");
 var Action = require("./CWOM/Action.js");
 const uuidv4 = require('uuid/v4');
-function getRandomInt(min, max) { 
+function getRandomInt(min, max) {
     var min = Math.ceil(min);
     var max = Math.floor(max);
     return Math.floor(Math.random() * (max - min)) + min; //(inclusive, exclusive)
@@ -13,9 +13,10 @@ module.exports = class CWOMService {
     constructor(config) {
         this.config = configManager.getCWOMConfig();
         this.authToken = "";
+
     }
-    
- 
+
+
     getTurboToken() {
         var svc = this;
 
@@ -23,7 +24,7 @@ module.exports = class CWOMService {
             var turbourl = svc.config.turboserver + '/vmturbo/rest/login?disable_hateoas=true';
             var authorization = 'Basic ' + Buffer.from(`${svc.config.username}:${svc.config.password}`).toString("base64");
             var headers = { 'Authorization': authorization, 'Content-Type': 'multipart/form-data' };
-            var params = { 'username': svc.config.username, 'password': svc.config.password};
+            var params = { 'username': svc.config.username, 'password': svc.config.password };
 
             var _include_headers = function (body, response, resolveWithFullResponse) {
                 return { 'headers': response.headers, 'data': body };
@@ -50,6 +51,225 @@ module.exports = class CWOMService {
                 throw err;
             });
         });
+    }
+    getWidgets() {
+        var svc = this;
+        return new Promise(resolve => {
+            var turbourl = svc.config.turboserver + '/vmturbo/rest/widgetsets?category=OVERVIEW&disable_hateoas=true&scope_type=Hybrid_BusinessApplication';
+            var headers = {
+                'Content-Type': 'application/json;charset=UTF-8',
+                'Authorization': 'Bearer ' + svc.authToken
+            };
+
+            var options = {
+                method: 'GET',
+                "rejectUnauthorized": false,
+                uri: turbourl,
+                headers: headers
+            };
+
+            rp(options).then(function (ret) {
+                var jsonret = JSON.parse(ret);
+                var businessappwidgets = jsonret[0];
+                var idmap = {}
+                var entityidlist = [];
+
+                if (businessappwidgets.scope === svc.config.businessApplicationId) {
+                    var widgets = businessappwidgets.widgets;
+                    for (var i = 0; i < widgets.length; i++) {
+                        var widget = widgets[i];
+                        if (widget.type == "pendingActions") {
+                            //GROUP ID?
+                            entityidlist.push(widget.scope.uuid);
+                        }
+                    }
+                }
+                resolve(entityidlist);
+            }).catch(function (err) {
+                console.log(JSON.stringify(err));
+                throw err;
+            });
+
+        }); // end Promise
+
+    }
+    getGroup() {
+        var svc = this;
+        return new Promise(resolve => {
+            var turbourl = svc.config.turboserver + '/vmturbo/rest/groups/';
+            var headers = {
+                'Content-Type': 'application/json;charset=UTF-8',
+                'Authorization': 'Bearer ' + svc.authToken
+            };
+
+            var options = {
+                method: 'POST',
+                "rejectUnauthorized": false,
+                uri: turbourl,
+                headers: headers,
+                body: JSON.stringify({
+                    isStatic: true,
+                    scope: [svc.uuid]
+                })
+            };
+
+            rp(options).then(function (ret) {
+                var jsonret = JSON.parse(ret);
+                var seMap = jsonret.seMap;
+                var idmap = {}
+                var entityidlist = [];
+                if (seMap) {
+                    for (var entityname in seMap) {
+
+                        var entity = seMap[entityname];
+                        for (var id in entity.instances) {
+                            entityidlist.push(id);
+                        }
+                        idmap[entityname] = entityidlist;
+                    }
+
+                }
+                resolve(entityidlist);
+            }).catch(function (err) {
+                console.log(JSON.stringify(err));
+                throw err;
+            });
+
+        }); // end Promise
+
+
+    }
+    getBusinessApplicationActions() {
+        var svc = this;
+        return new Promise(function (resolve, reject) {
+            svc.getTurboToken().then(async function (tokenret) {
+                var bodyreturn = JSON.parse(tokenret.data);
+                var headerreturn = tokenret.headers;
+                svc.authToken = bodyreturn.authToken;
+                svc.getWidgets().then(async (groupidlist) => {
+                    svc.getGroupListActions(groupidlist).then(async function (actions) {
+                        resolve(actions);
+                    });
+                });
+            }).catch(function (rej) { console.log("Promise 3 Failed! " + rej); });
+
+        });
+    }
+
+    //Used if I want to get SeMap
+    getAllBusinessAppEntities() {
+
+        var svc = this;
+        return new Promise(resolve => {
+            var turbourl = svc.config.turboserver + '/vmturbo/rest/entities/' + svc.config.businessApplicationId + "/supplychains?entity_states=&detail_type=entity&health=true";
+            var headers = {
+                'Content-Type': 'application/json;charset=UTF-8',
+                'Authorization': 'Bearer ' + svc.authToken
+            };
+
+            var options = {
+                method: 'GET',
+                "rejectUnauthorized": false,
+                uri: turbourl,
+                headers: headers
+            };
+
+            rp(options).then(function (ret) {
+                var jsonret = JSON.parse(ret);
+                var seMap = jsonret.seMap;
+                var idmap = {}
+                var entityidlist = [];
+                if (seMap) {
+                    for (var entityname in seMap) {
+
+                        var entity = seMap[entityname];
+                        for (var id in entity.instances) {
+                            entityidlist.push(id);
+                        }
+                        idmap[entityname] = entityidlist;
+                    }
+
+                }
+                resolve(entityidlist);
+            }).catch(function (err) {
+                console.log(JSON.stringify(err));
+                throw err;
+            });
+
+        }); // end Promise
+
+    }
+
+    getGroupListActions(groupidlist) {
+        var svc = this;
+        return new Promise(function (resolve, reject) {
+
+            let promisedActions = [];
+            for (var i = 0; i < groupidlist.length; i++) {
+                promisedActions.push(svc.getTurboGroupActions(groupidlist[i]));
+            }
+
+            Promise.all(promisedActions).then(function (resultData) {
+                var actions = [];
+                //console.log("===> Total Actions Returned: " + resultData.length);
+                for (var x = 0; x < resultData.length; x++) {
+                    var newAction = resultData[x];
+                    if (newAction != null && newAction.length > 0) {
+
+                        for (var w = 0; w < newAction.length; w++) {
+                            var thisAction = newAction[w];
+                            //console.log("===> Validating Action: " + thisAction.uuid + " of type: " + thisAction.target.className);
+                            actions.push(thisAction);
+                        }
+                    } // end if null
+                }
+
+                resolve(actions);
+
+
+            }).catch(function (rej) { console.log("Entity List Failed! " + rej); reject(rej) });
+
+        });
+
+    }
+    getTurboGroupActions(uuid, entityidlist) {
+        var svc = this;
+        return new Promise(resolve => {
+            var turbourl = svc.config.turboserver + '/vmturbo/rest/groups/' + uuid + "/actions";
+            var headers = {
+                'Content-Type': 'application/json;charset=UTF-8',
+                'Authorization': 'Bearer ' + svc.authToken
+            };
+
+            var options = {
+                method: 'GET',
+                "rejectUnauthorized": false,
+                uri: turbourl,
+                headers: headers
+            };
+
+            rp(options).then(function (ret) {
+                if (ret.length > 100) {
+                    var actionslist = [];
+                    var myactionreturn = JSON.parse(ret);
+                    var actionIDMap = new Map();
+
+
+                    for (var i = 0; i < myactionreturn.length; i++) {
+                        var thisAction = new Action(myactionreturn[i]);
+                        var targetid = thisAction.target.uuid;
+                        actionslist.push(thisAction);
+                    }
+                    resolve(actionslist);
+
+                } else { resolve(null); }
+            }).catch(function (err) {
+                console.log(JSON.stringify(err));
+                throw err;
+            });
+
+        }); // end Promise
+
     }
     getTurboActionList(critOnly, supplyChain, uniqueID) {
         var svc = this;
@@ -94,7 +314,10 @@ module.exports = class CWOMService {
                 var spreturn = null;
                 var allActions = [];
                 var vmUUids = svc.config.vmUUids;
-                svc.getAppServerList(svc.config.uuid).then(async function (data) {
+                svc.getSEMap().then(async function (data) {
+                    console.log(data);
+                });
+                svc.getAppServerList(svc.config.businessApplicationId).then(async function (data) {
 
                     var allActions = [];
                     var asUUids = data;
@@ -113,19 +336,17 @@ module.exports = class CWOMService {
                         //console.log("===> Total Actions Returned: " + resultData.length);
                         for (var x = 0; x < resultData.length; x++) {
                             var newAction = resultData[x];
-                            if (newAction != null && newAction.length > 0)
-                            {
-                  
-                              for(var w = 0; w < newAction.length; w++)
-                              {
-                                var thisAction = newAction[w];
-                                //console.log("===> Validating Action: " + thisAction.uuid + " of type: " + thisAction.target.className);
-                                actions.push(thisAction);
-                              }
-                        } // end if null
-                    }
+                            if (newAction != null && newAction.length > 0) {
 
-                    resolve(actions);
+                                for (var w = 0; w < newAction.length; w++) {
+                                    var thisAction = newAction[w];
+                                    //console.log("===> Validating Action: " + thisAction.uuid + " of type: " + thisAction.target.className);
+                                    actions.push(thisAction);
+                                }
+                            } // end if null
+                        }
+
+                        resolve(actions);
 
                     }).catch(function (rej) { console.log("AppServerList Failed! " + rej); });
 
@@ -195,17 +416,16 @@ module.exports = class CWOMService {
 
                     for (var i = 0; i < myactionreturn.length; i++) {
                         var thisAction = new Action(myactionreturn[i]);
-                        if (thisAction.target.className === "VirtualMachine")
-                        {
-                          
-                          if (!critOnly) {
-                              //resolve(thisAction);
-                              allVMActions.push(thisAction);
-                          }
-                          else if (critOnly && thisAction.risk.severity === "CRITICAL") {
-                            //resolve(thisAction);
-                            allVMActions.push(thisAction);
-                          }
+                        if (thisAction.target.className === "VirtualMachine") {
+
+                            if (!critOnly) {
+                                //resolve(thisAction);
+                                allVMActions.push(thisAction);
+                            }
+                            else if (critOnly && thisAction.risk.severity === "CRITICAL") {
+                                //resolve(thisAction);
+                                allVMActions.push(thisAction);
+                            }
                         }
 
                         //else { resolve(null); }
@@ -243,7 +463,7 @@ module.exports = class CWOMService {
                 if (ret.length > 100) {
                     var allASActions = [];
                     var myactionreturn = JSON.parse(ret);
-                
+
                     for (var i = 0; i < myactionreturn.length; i++) {
                         var thisAction = new Action(myactionreturn[i]);
 
@@ -269,19 +489,19 @@ module.exports = class CWOMService {
 
         return new Promise(function (resolve, reject) {
             var actions = [];
-            for(var i = 0; i < getRandomInt(3,6); i++) { 
-                actions.push(svc.getMockAppServerAction(severitys[getRandomInt(0,3)]))
+            for (var i = 0; i < getRandomInt(3, 6); i++) {
+                actions.push(svc.getMockAppServerAction(severitys[getRandomInt(0, 3)]))
             }
-            for(var i = 0; i < getRandomInt(1,6); i++) { 
-                actions.push(svc.getMockVirtualServerAction(severitys[getRandomInt(0,3)]))
+            for (var i = 0; i < getRandomInt(1, 6); i++) {
+                actions.push(svc.getMockVirtualServerAction(severitys[getRandomInt(0, 3)]))
             }
             resolve(actions);
         });
     }
     getMockVirtualServerAction(severity) {
-        var serverName = "Cisco - APPCWOM" + getRandomInt(1,20);
-        var VMEM = getRandomInt(13000000,23000000);
-        var VMEMDown = VMEM -  getRandomInt(4000000, 11000000 );
+        var serverName = "Cisco - APPCWOM" + getRandomInt(1, 20);
+        var VMEM = getRandomInt(13000000, 23000000);
+        var VMEMDown = VMEM - getRandomInt(4000000, 11000000);
         return new Action({
             "uuid": uuidv4(),
             "createTime": "2019-06-20T11:58:31-04:00",
@@ -347,7 +567,7 @@ module.exports = class CWOMService {
                     }
                 }
             },
-            "currentValue":VMEM,
+            "currentValue": VMEM,
             "newValue": VMEMDown,
             "resizeToValue": VMEMDown,
             "template": {
@@ -392,12 +612,12 @@ module.exports = class CWOMService {
         })
     }
     getMockAppServerAction(severity) {
-        var serverName = "Mock AppDynamics Application Server[127.0.0.1,Mock:Server" + getRandomInt(1,20)+ "]";
-        var threads = getRandomInt(100,250);
+        var serverName = "Mock AppDynamics Application Server[127.0.0.1,Mock:Server" + getRandomInt(1, 20) + "]";
+        var threads = getRandomInt(100, 250);
         var threadsnew = threads - getRandomInt(1, 50);
         var scaleText = '';
         var risk = '';
-        if(getRandomInt(0,2)) {
+        if (getRandomInt(0, 2)) {
             scaleText = "Scale up";
             risk = "Performance Assurance";
             var temp = threads;

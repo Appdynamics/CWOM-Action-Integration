@@ -37,7 +37,7 @@ class CWOMPanelComponent extends BaseComponent {
             options.action = options.title;
         }
         options.hasChart = false;
-        options.icons = [{type: "ApplicationServer"},{type: "VirtualMachine"},{type: "Host"},{type: "Storage"},{type: "Database"}];
+        options.icons = [{type: "ApplicationServer"},{type: "VirtualMachine"}];
         //options.selectedFilter = 'none';
         super(options, null);
     }

@@ -5,8 +5,8 @@ var cwomsvc = new CWOMService({});
 
 
 router.get('/actions', function(req, res) {
-    cwomsvc.getTurboActionList(false).then((actions) => {
-
+   // cwomsvc.getTurboActionList(false).then((actions) => {
+    cwomsvc.getBusinessApplicationActions().then((actions) => {
         var results  = {
             cwomserver: cwomsvc.config.turboserver,
             actions : actions
