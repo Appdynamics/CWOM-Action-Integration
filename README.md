@@ -49,6 +49,8 @@ If you copy the above default text, you can still run the node.js server. cwom_c
    http://localhost:3000
 
 
+# CWOM Configuration
+Currently the Actions are pulled via the api by groups. A group needs to be created that contains the actions you want.  Then a widget that displays those actions will have to be added on the business application screen.  This allows us to limit how many api calls are used to gather all the actions.
 
 # Documentation
 Example page with real action data: http://localhost:3000/views/examples/cwom.html 
