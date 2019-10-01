@@ -41,7 +41,7 @@ If you copy the above default text, you can still run the node.js server. cwom_c
 * `turboserver`: url to the cwom instance
 * `username`: username of user that can pull actions via the API
 * `password`: password of user that can pull actions via the api
-* `businessApplicationId`: CWOM Business Application ID we are pulling actions for. can be found by navigating to Business Application and looking at url "u/app/#/view/main/<id>"
+* `businessApplicationId`: CWOM Business Application ID we are pulling actions for. can be found by navigating to Business Application and looking at url "u/app/#/view/main/businessApplicationId"
 
 
 6. Start node.js: `npm start`
