@@ -28,8 +28,7 @@ References:
 		"turboserver": "https://my.turbo.server.com",
 		"username": "<username>",
 		"password": "<password>",
-		"uuid": "<uuid>",
-		"vmUUids":[ "<string array of vmUUIDs>" ]
+		"businessApplicationId": "<uuid>"
 	}
 
 }
