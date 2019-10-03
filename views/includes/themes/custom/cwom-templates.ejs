@@ -114,13 +114,17 @@
         {{/for}}
         <div class='col-1' style='display:inline-block;'>&nbsp;</div>
     </div>
-    <div class='col-12' >
+    <div class='col-12 headers' >
+      <div class='row'>
+      
 
         {^{for actions filter=~actionFilter }}
             {{include  tmpl="#_actionHeaderRecommendation"/}}
         {{/for}}
+      </div>
     </div>
         <div class='col-12' >
+
         {^{for actions filter=~actionDetailFilter }}
             {{include  tmpl="#_itemDetail"/}}
         {{/for}}

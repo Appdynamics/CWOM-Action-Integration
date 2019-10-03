@@ -1,3 +1,12 @@
+.headers > .row {
+  overflow-x: auto;
+  white-space: nowrap;
+  flex-wrap: nowrap;
+}
+.headers > .row > .mb-3 {
+  display: inline-block;
+  float: none;
+}
 .supply-chain-chart-container{height:100vh;min-height:0}
 .supply-chain{cursor:pointer}
 .supply-chain-center-circle{cursor:pointer;fill:transparent}
