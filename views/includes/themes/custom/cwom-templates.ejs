@@ -131,7 +131,7 @@
 <script id="_actionHeaderRecommendation" type="text/x-jsrender">
      <div class='card {{if risk.severity === "CRITICAL" }}border-danger{{else }}border-secondary{{/if}} mb-3'>
        <div class='card-header-{{:risk.severity}}'>{{:risk.severity}}</div>
-       <div class='card-header'><img src='/img/{{if target.className === "ApplicationServer" }}as{{else target.className === "VirtualMachine" }}vm{{/if}}.png' class='actionicon'/><span {{if risk.severity === "CRITICAL" }}style='color:#FF0000;'{{/if}}>{{if target.className === "ApplicationServer" }}Application Server{{else target.className === "VirtualMachine" }}Virtual Machine{{/if}} Action</span></div>
+       <div class='card-header'><img src='/img/{{if target.className === "ApplicationServer" }}as{{else}}vm{{/if}}.png' class='actionicon'/><span {{if risk.severity === "CRITICAL" }}style='color:#FF0000;'{{/if}}>{{if target.className === "ApplicationServer" }}Application Server{{else target.className === "VirtualMachine" }}Virtual Machine{{/if}} Action</span></div>
 
        <div class='card-body'>
           <a class='list-group-item-action'
@@ -199,10 +199,13 @@
         <span class='categorytext'> IP Address: </span> <span class='actiondata'>
           {{getIp: target target.className}}</span>
       </div>
+      {{if target.aspects.cloudAspect !== undefined}}
       <div class='col-12'>
         <span class='categorytext'> Business Account: </span> <span class='actiondata'>
           {{:target.aspects.cloudAspect.businessAccount.uuid}} </span>
       </div>
+
+      {{/if}}
       <div class='col-12' style='margin-top:20px;'>
         <span class='categorytitle'> Action Details </span>
       </div>

@@ -52,6 +52,49 @@ module.exports = class CWOMService {
             });
         });
     }
+
+    ///Scaling action that is not on VM for Business App, throw out.
+    getActionsByScope(scopeid) {
+        var svc = this;
+        return new Promise(resolve => {
+            var turbourl = svc.config.turboserver + '/vmturbo/rest/actions';
+            var headers = {
+                'Content-Type': 'application/json;charset=UTF-8',
+                'Authorization': 'Bearer ' + svc.authToken
+            };
+
+            var options = {
+                method: 'GET',
+                "rejectUnauthorized": false,
+                uri: turbourl,
+                headers: headers
+            };
+
+            rp(options).then(function (ret) {
+                var jsonret = JSON.parse(ret);
+                var businessappwidgets = jsonret[0];
+                var idmap = {}
+                var entityidlist = [];
+
+                if (businessappwidgets.scope === svc.config.businessApplicationId) {
+                    var widgets = businessappwidgets.widgets;
+                    for (var i = 0; i < widgets.length; i++) {
+                        var widget = widgets[i];
+                        if (widget.type == "pendingActions") {
+                            //GROUP ID?
+                            entityidlist.push(widget.scope.uuid);
+                        }
+                    }
+                }
+                resolve(entityidlist);
+            }).catch(function (err) {
+                console.log(JSON.stringify(err));
+                throw err;
+            });
+
+        }); // end Promise
+
+    }
     getWidgets() {
         var svc = this;
         return new Promise(resolve => {
@@ -293,7 +336,7 @@ module.exports = class CWOMService {
         });
     }
 
-    getTurboActions(critOnly) {
+    getTurboActions(businessAppId) {
 
         //
         // Only bring actions from these VMs (Highlighted in the demo flow)
@@ -311,52 +354,119 @@ module.exports = class CWOMService {
                 var headerreturn = tokenret.headers;
 
                 svc.authToken = bodyreturn.authToken;
-                var spreturn = null;
-                var allActions = [];
-                var vmUUids = svc.config.vmUUids;
-                svc.getSEMap().then(async function (data) {
-                    console.log(data);
-                });
-                svc.getAppServerList(svc.config.businessApplicationId).then(async function (data) {
-
-                    var allActions = [];
-                    var asUUids = data;
-
-                    let promisedActions = [];
-                    for (var i = 0; i < vmUUids.length; i++) {
-                        promisedActions.push(svc.getTurboVMAction(vmUUids[i], critOnly));
-                    }
-
-                    for (var z = 0; z < asUUids.length; z++) {
-                        promisedActions.push(svc.getTurboAppServerAction(asUUids[z], critOnly));
-                    }
-
-                    Promise.all(promisedActions).then(function (resultData) {
-                        var actions = [];
-                        //console.log("===> Total Actions Returned: " + resultData.length);
-                        for (var x = 0; x < resultData.length; x++) {
-                            var newAction = resultData[x];
-                            if (newAction != null && newAction.length > 0) {
-
-                                for (var w = 0; w < newAction.length; w++) {
-                                    var thisAction = newAction[w];
-                                    //console.log("===> Validating Action: " + thisAction.uuid + " of type: " + thisAction.target.className);
-                                    actions.push(thisAction);
-                                }
-                            } // end if null
+                var businessid = businessAppId || '';
+                svc.getSupplyChainEntities(businessid).then(async function (filtermap) {
+                    svc.getActionsForScope(businessid, filtermap).then(
+                        async function (actions) {
+                            resolve(actions);
                         }
+                    , function (error) {
+                        reject(error)
+                    })
 
-                        resolve(actions);
+                });
 
-                    }).catch(function (rej) { console.log("AppServerList Failed! " + rej); });
 
-                }).catch(function (rej) { console.log("Promise ALL Failed! " + rej); });
-
+            }, (error) => {
+                console.log(error);
             }).catch(function (rej) { console.log("Promise 3 Failed! " + rej); });
 
         });
     }
-    //Gets List of App Servers from Business Application AD-Financial-CWOM
+    getActionsForScope(scopeid, filtermap) {
+        var svc = this;
+        return new Promise(resolve => {
+            var turbourl = svc.config.turboserver + '/api/v2/actions';
+            var headers = {
+                'Content-Type': 'application/json;charset=UTF-8',
+                'Authorization': 'Bearer ' + svc.authToken
+            };
+
+            var options = {
+                method: 'POST',
+                "rejectUnauthorized": false,
+                uri: turbourl,
+                headers: headers,
+                body: JSON.stringify({
+                    scopes: [scopeid],
+                    actionInput: { relatedEntityTypes: ["VirtualMachine", "ApplicationServer", "DatabaseServer", "Storage",  "PhysicalMachine"] }
+                })
+            };
+
+            rp(options).then(function (ret) {
+                var actionMap = new Map();
+                var actionsret = [];
+                if (ret.length > 100) {
+
+                    var jsonRet = JSON.parse(ret);
+                    for (var i = 0; i < jsonRet.length; i++) {
+                        var ba = jsonRet[i];
+                        var actions = ba.actions;
+                        for (var j = 0; j < actions.length; j++) {
+                            var action = actions[j];
+
+                            if (!actionMap.has(action.uuid)) {
+                                if (filtermap.has(action.target.uuid)) {
+                                    actionMap.set(action.uuid, true);
+                                    actionsret.push(new Action(action));
+                                }
+                            }
+                        }
+                    }
+                }
+
+
+                resolve(actionsret);
+            },(error) => {
+                
+                resolve([]);
+            });
+
+        }, reject => {reject(error)}); // end Promise
+
+    }
+    getSupplyChainEntities(uuid) {
+
+        var svc = this;
+        return new Promise(resolve => {
+            var turbourl = svc.config.turboserver + '/api/v2/supplychains?uuids=' + uuid + '&detail_type=entity&health=true';
+            var headers = {
+                'Content-Type': 'application/json;charset=UTF-8',
+                'Authorization': 'Bearer ' + svc.authToken
+            };
+
+            var options = {
+                method: 'GET',
+                "rejectUnauthorized": false,
+                uri: turbourl,
+                headers: headers
+            };
+
+            rp(options).then(function (ret) {
+                var entityMap = new Map();
+                if (ret.length > 100) {
+
+                    var jsonRet = JSON.parse(ret);
+                    var seMap = jsonRet.seMap
+                    if (seMap) {
+                        for (var type in seMap) {
+                            var instancemap = seMap[type].instances;
+                            for (var instanceid in instancemap) {
+                                entityMap.set(instanceid, true);
+                            }
+                        }
+                    }
+
+                }
+                resolve(entityMap);
+            }).catch(function (err) {
+                console.log(JSON.stringify(err));
+                throw err;
+            });
+
+        }); // end Promise
+    }
+
     getAppServerList(uuid) {
         var svc = this;
         return new Promise(resolve => {
@@ -489,7 +599,8 @@ module.exports = class CWOMService {
 
         return new Promise(function (resolve, reject) {
             var actions = [];
-            for (var i = 0; i < getRandomInt(3, 6); i++) {
+            //3,6
+            for (var i = 0; i < getRandomInt(40, 60); i++) {
                 actions.push(svc.getMockAppServerAction(severitys[getRandomInt(0, 3)]))
             }
             for (var i = 0; i < getRandomInt(1, 6); i++) {

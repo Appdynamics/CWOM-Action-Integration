@@ -4,9 +4,9 @@ var CWOMService = require('../src/CWOMService.js');
 var cwomsvc = new CWOMService({});
 
 
-router.get('/actions', function(req, res) {
-   // cwomsvc.getTurboActionList(false).then((actions) => {
-    cwomsvc.getBusinessApplicationActions().then((actions) => {
+router.get('/actions/:id', function(req, res) {
+    var id = req.params.id;
+    cwomsvc.getTurboActions(id).then((actions) => {
         var results  = {
             cwomserver: cwomsvc.config.turboserver,
             actions : actions

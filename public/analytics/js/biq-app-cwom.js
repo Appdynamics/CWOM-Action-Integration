@@ -37,7 +37,7 @@ class CWOMPanelComponent extends BaseComponent {
             options.action = options.title;
         }
         options.hasChart = false;
-        options.icons = [{type: "ApplicationServer"},{type: "VirtualMachine"}];
+        options.icons = [{type: "ApplicationServer"},{type: "VirtualMachine"},{type: "Storage"},{type: "Host"},{type: "Database"}];
         //options.selectedFilter = 'none';
         super(options, null);
     }
@@ -176,6 +176,7 @@ class CWOMPanelComponent extends BaseComponent {
                     }
                 },
                 getval: function (reasonCommodity, newValue, displayValue) {
+                    reasonCommodity = reasonCommodity ? reasonCommodity : '';
                     var formatBytes = function (a, b) {
                         if (0 == a)
                             return "0 Bytes";

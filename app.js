@@ -93,6 +93,10 @@ if (configManager.getDashboards()) {
     });
 }
 
+// //  "actionTypeList": [
+//     "NONE"
+// ],
+
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
     var err = new Error(req.originalUrl, 'Not Found');

@@ -40,7 +40,11 @@
 
 	var buildDashboard = function () {
 
-		makeGetCall("/cwom/actions", function (results) {
+		//This is not IE compatible. For IE compatibility, would have to use a polyfill to get URL paras
+		const params = new URLSearchParams(window.location.search);  
+		const businessAppID = params.get("businessAppID");  
+
+		makeGetCall("/cwom/actions/" + businessAppID, function (results) {
 			var actions = [];
 			if (results && results.actions) {
 				actions = results.actions;
