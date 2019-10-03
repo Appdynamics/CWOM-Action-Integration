@@ -6,7 +6,7 @@ When executing an action, it also removes the action but does not execute it sin
 
 ## Required Frameworks
 
-1. NodeJS
+1. NodeJS v7 or above
 
 References:
 
