@@ -27,8 +27,7 @@ References:
 	"cwom_config": {
 		"turboserver": "https://my.turbo.server.com",
 		"username": "<username>",
-		"password": "<password>",
-		"businessApplicationId": "<uuid>"
+		"password": "<password>"
 	}
 
 }
