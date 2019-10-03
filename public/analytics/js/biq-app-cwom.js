@@ -107,6 +107,9 @@ class CWOMPanelComponent extends BaseComponent {
                     }
 
                 },
+                urlEncoder: function(uri) {
+                    return encodeURIComponent(uri);
+                },
                 getIp: function(target, type) {
                     if(type === "ApplicationServer") {
                         return target.displayName.substring(target.displayName.indexOf("[")+1, target.displayName.indexOf(","));s
