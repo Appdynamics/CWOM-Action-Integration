@@ -143,9 +143,9 @@
            data-toggle='list' href='#list-{{:uuid}}' role='tab' aria-controls='{{:uuid}}'>
            <div class='card-text'>
             <div>
-              <b>Action:</b> &nbsp; {{actionDescription:newValue currentValue risk}}<br>
+              <b>Action:</b> &nbsp;{{if actionType === 'DELETE' }}DELETE{{else}}{{actionDescription:newValue currentValue risk}}{{/if}}<br>
               <b> Target:</b> &nbsp; {{targetDisplay:target target.className}}<br>
-              <b> Resize from</b> {{getval:risk.reasonCommodity newValue currentValue}} <b>to</b> {{getval:risk.reasonCommodity newValue newValue}}<br/>
+              {{if actionType !== 'DELETE' }}<b> Resize from</b> {{getval:risk.reasonCommodity newValue currentValue}} <b>to</b> {{getval:risk.reasonCommodity newValue newValue}}<br/>{{/if}}
               <b> Reason:</b> &nbsp; {{:risk.subCategory}}
             </div>
            </div>
@@ -195,20 +195,21 @@
           <span class='classname'> {{:target.displayName}} </span>
         </a>
       </div>
-      <div class='col-12'>
-        <span class='categorytext'> Host: </span> <span class='actiondata'> {{getHost:target target.className}}
-        </span>
-      </div>
-      <div class='col-12'>
-        <span class='categorytext'> IP Address: </span> <span class='actiondata'>
-          {{getIp: target target.className}}</span>
-      </div>
-      {{if target.aspects.cloudAspect !== undefined}}
-      <div class='col-12'>
-        <span class='categorytext'> Business Account: </span> <span class='actiondata'>
-          {{:target.aspects.cloudAspect.businessAccount.uuid}} </span>
-      </div>
-
+      {{if actionType != 'DELETE'}}
+        <div class='col-12'>
+          <span class='categorytext'> Host: </span> <span class='actiondata'> {{getHost:target target.className}}
+          </span>
+        </div>
+        <div class='col-12'>
+          <span class='categorytext'> IP Address: </span> <span class='actiondata'>
+            {{getIp: target target.className}}</span>
+        </div>
+        {{if target.aspects.cloudAspect !== undefined}}
+        <div class='col-12'>
+          <span class='categorytext'> Business Account: </span> <span class='actiondata'>
+            {{:target.aspects.cloudAspect.businessAccount.uuid}} </span>
+        </div>
+        {{/if}}
       {{/if}}
       <div class='col-12' style='margin-top:20px;'>
         <span class='categorytitle'> Action Details </span>
@@ -244,28 +245,35 @@
       <div class='col-12'>
         <span class='classtitle'> Change Details </span>
       </div>
+      {{if risk.reasonCommodity.length > 0 }}
       <div class='col-12'>
         <span class='categorytext'> Main Factor: </span> <span class='actiondata'> {{:risk.reasonCommodity}} </span>
       </div>
+
+      {{/if}}
       <div class='col-12'>
         <span class='categorytext'> Goal: </span> <span class='actiondata'> {{:risk.subCategory}} </span>
       </div>
       <div class='col-12'>
         <span class='categorytext'> Environment: </span> <span class='actiondata'> {{:target.environmentType}} </span>
       </div>
-      {{if target.className == "ApplicationServer"}}
+      {{if actionType == "DELETE"}}
+
+      {{else target.className == "ApplicationServer"}}
       <div class='col-12' style='margin-top:20px;'>
         <span class='categorytitle'> Resource Details </span>
       </div>
-      <div class='col-12'>
-        <span class='categorytext'> {{:risk.reasonCommodity}} From: </span> <span class='actiondata'>
-          {{getval:risk.reasonCommodity newValue currentValue}}
-        </span>
-      </div>
-      <div class='col-12'>
-        <span class='categorytext'> {{:risk.reasonCommodity}} To: </span> <span class='actiondata'>
-          {{getval:risk.reasonCommodity currentValue newValue}} </span>
-      </div>
+
+        <div class='col-12'>
+          <span class='categorytext'> {{:risk.reasonCommodity}} From: </span> <span class='actiondata'>
+            {{getval:risk.reasonCommodity newValue currentValue}}
+          </span>
+        </div>
+        <div class='col-12'>
+          <span class='categorytext'> {{:risk.reasonCommodity}} To: </span> <span class='actiondata'>
+            {{getval:risk.reasonCommodity currentValue newValue}} </span>
+        </div>
+  
       {{else}}
       <div class='col-12' style='margin-top:20px;'>
             <span class='categorytitle'> Current Resource </span>

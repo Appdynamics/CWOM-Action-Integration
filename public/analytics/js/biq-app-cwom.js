@@ -104,6 +104,8 @@ class CWOMPanelComponent extends BaseComponent {
                         return target.displayName.substring(target.displayName.indexOf(",")+1, target.displayName.indexOf("]"));
                     } else if (type === "VirtualMachine") {
                         return target.aspects.virtualMachineAspect.os;
+                    } else {
+                        return target.displayName;
                     }
 
                 },
