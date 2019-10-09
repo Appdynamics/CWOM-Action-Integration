@@ -51,6 +51,8 @@ If you copy the above default text, you can still run the node.js server. cwom_c
 # Documentation
 Example page with real action data: http://localhost:3000/views/examples/cwom.html?businessAppID=put_your_business_appid_here
 
+The easiest way to find the business appid is to open up the CWOM instance, click on search, click business applications, click on your business application.  The ID can be found in the URL.  
+
 Example page with fake action data for demo purposes (if you don't have a cwom instance to hook into): http://localhost:3000/views/examples/cwomMockData.html
 
 # AppDynamics Dashboard
