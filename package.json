@@ -29,7 +29,7 @@
     "hoek": "~> 4.2.1",
     "http-debug": "^0.1.2",
     "http-proxy-agent": "^2.1.0",
-    "https-proxy-agent": "^2.2.2",
+    "https-proxy-agent": "^2.2.3",
     "jquery": "^3.4.1",
     "jquery-ui": "^1.12.1",
     "jsviews": "^1.0.4",
