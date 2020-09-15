@@ -15,4 +15,5 @@ public/_design
 views/_design
 
 CONFIG.BAK
+*.bak
 test.json

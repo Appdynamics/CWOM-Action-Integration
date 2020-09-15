@@ -2,6 +2,7 @@ var rp = require('request-promise').defaults({ jar: true });
 var configManager = require("./ConfigManager.js");
 var Action = require("./CWOM/Action.js");
 const uuidv4 = require('uuid/v4');
+const winston = require('winston');
 function getRandomInt(min, max) {
     var min = Math.ceil(min);
     var max = Math.floor(max);
@@ -12,14 +13,25 @@ var severitys = ["CRITICAL", "MAJOR", "MINOR"];
 module.exports = class CWOMService {
     constructor(config) {
         this.config = configManager.getCWOMConfig();
+        const loglevel = configManager.getLogLevel();
         this.authToken = "";
+        this.logger = winston.createLogger({
+            level: loglevel || 'info',
+            format: winston.format.json(),
+            defaultMeta: { service: 'CWOMService' },
+            transports: [
+              new winston.transports.File({ filename: 'logs/error.log', level: 'error', maxsize: 1024 * 1024 * 20}),
+              new winston.transports.File({ filename: 'logs/combined.log', maxsize: 1024 * 1024 * 20 }),
+
+            ]
+          });
 
     }
 
 
     getTurboToken() {
         var svc = this;
-
+        svc.logger.debug('getTurboToken.Getting Turbo Token');
         return new Promise(function (resolve, reject) {
             var turbourl = svc.config.turboserver + '/vmturbo/rest/login?disable_hateoas=true';
             var authorization = 'Basic ' + Buffer.from(`${svc.config.username}:${svc.config.password}`).toString("base64");
@@ -46,8 +58,11 @@ module.exports = class CWOMService {
             rp(options).then(function (ret) {
                 //console.log('Return from Turbo Token: ' + JSON.stringify(ret));
                 //console.log('Response Headers from Turbo Token: ' + JSON.stringify(ret.headers));
+                svc.logger.debug('getTurboToken.rp', ret);
                 resolve(ret);
             }).catch(function (err) {
+
+                svc.logger.error('getTurboToken.rp', err);
                 throw err;
             });
         });
@@ -56,6 +71,7 @@ module.exports = class CWOMService {
     ///Scaling action that is not on VM for Business App, throw out.
     getActionsByScope(scopeid) {
         var svc = this;
+        svc.logger.silly('getActionsByScope');
         return new Promise(resolve => {
             var turbourl = svc.config.turboserver + '/vmturbo/rest/actions';
             var headers = {
@@ -72,7 +88,9 @@ module.exports = class CWOMService {
 
             rp(options).then(function (ret) {
                 var jsonret = JSON.parse(ret);
+                svc.logger.debug('getActionsByScope.rp', jsonret);
                 var businessappwidgets = jsonret[0];
+
                 var idmap = {}
                 var entityidlist = [];
 
@@ -88,7 +106,7 @@ module.exports = class CWOMService {
                 }
                 resolve(entityidlist);
             }).catch(function (err) {
-                console.log(JSON.stringify(err));
+                svc.logger.error('getActionsByScope.rp',err);
                 throw err;
             });
 
@@ -97,6 +115,7 @@ module.exports = class CWOMService {
     }
     getWidgets() {
         var svc = this;
+        svc.logger.silly('getWidgets');
         return new Promise(resolve => {
             var turbourl = svc.config.turboserver + '/vmturbo/rest/widgetsets?category=OVERVIEW&disable_hateoas=true&scope_type=Hybrid_BusinessApplication';
             var headers = {
@@ -113,7 +132,9 @@ module.exports = class CWOMService {
 
             rp(options).then(function (ret) {
                 var jsonret = JSON.parse(ret);
+                svc.logger.debug('getWidgets.rp', jsonret);
                 var businessappwidgets = jsonret[0];
+
                 var idmap = {}
                 var entityidlist = [];
 
@@ -129,7 +150,7 @@ module.exports = class CWOMService {
                 }
                 resolve(entityidlist);
             }).catch(function (err) {
-                console.log(JSON.stringify(err));
+                svc.logger.error('getWidgets.rp', err);
                 throw err;
             });
 
@@ -158,6 +179,7 @@ module.exports = class CWOMService {
 
             rp(options).then(function (ret) {
                 var jsonret = JSON.parse(ret);
+                svc.logger.debug('getGroup.rp', jsonret);
                 var seMap = jsonret.seMap;
                 var idmap = {}
                 var entityidlist = [];
@@ -185,16 +207,20 @@ module.exports = class CWOMService {
     getBusinessApplicationActions() {
         var svc = this;
         return new Promise(function (resolve, reject) {
+            svc.logger.debug('getBusinessApplicationActions.init');
             svc.getTurboToken().then(async function (tokenret) {
+                svc.logger.debug('getBusinessApplicationActions.getTurboToken',tokenret);
                 var bodyreturn = JSON.parse(tokenret.data);
                 var headerreturn = tokenret.headers;
                 svc.authToken = bodyreturn.authToken;
                 svc.getWidgets().then(async (groupidlist) => {
+                    svc.logger.debug('getBusinessApplicationActions.getWidgets',groupidlist);
                     svc.getGroupListActions(groupidlist).then(async function (actions) {
+                        svc.logger.debug('getBusinessApplicationActions.getGroupListActions',actions);
                         resolve(actions);
                     });
                 });
-            }).catch(function (rej) { console.log("Promise 3 Failed! " + rej); });
+            }).catch(function (rej) { svc.logger.error('getBusinessApplicationActions.error', rej); });
 
         });
     }
@@ -219,6 +245,7 @@ module.exports = class CWOMService {
 
             rp(options).then(function (ret) {
                 var jsonret = JSON.parse(ret);
+                svc.logger.debug('getAllBusinessAppEntities.rp', jsonret);
                 var seMap = jsonret.seMap;
                 var idmap = {}
                 var entityidlist = [];
@@ -235,7 +262,7 @@ module.exports = class CWOMService {
                 }
                 resolve(entityidlist);
             }).catch(function (err) {
-                console.log(JSON.stringify(err));
+                svc.logger.error('getAllBusinessAppEntities.rp', err);
                 throw err;
             });
 
@@ -251,9 +278,10 @@ module.exports = class CWOMService {
             for (var i = 0; i < groupidlist.length; i++) {
                 promisedActions.push(svc.getTurboGroupActions(groupidlist[i]));
             }
-
+            svc.logger.debug(`getGroupListActions - Getting ${promisedActions.length} promised actions`);
             Promise.all(promisedActions).then(function (resultData) {
                 var actions = [];
+                svc.logger.debug('getGroupListActions.Promise.all', resultData);
                 //console.log("===> Total Actions Returned: " + resultData.length);
                 for (var x = 0; x < resultData.length; x++) {
                     var newAction = resultData[x];
@@ -270,7 +298,7 @@ module.exports = class CWOMService {
                 resolve(actions);
 
 
-            }).catch(function (rej) { console.log("Entity List Failed! " + rej); reject(rej) });
+            }).catch(function (rej) { svc.logger.error('getGroupListActions.Promise.all', rej); reject(rej) });
 
         });
 
@@ -290,8 +318,9 @@ module.exports = class CWOMService {
                 uri: turbourl,
                 headers: headers
             };
-
+            
             rp(options).then(function (ret) {
+                svc.logger.debug('getTurboGroupActions.rp', ret);
                 if (ret.length > 100) {
                     var actionslist = [];
                     var myactionreturn = JSON.parse(ret);
@@ -307,7 +336,7 @@ module.exports = class CWOMService {
 
                 } else { resolve(null); }
             }).catch(function (err) {
-                console.log(JSON.stringify(err));
+                svc.logger.error('getTurboGroupActions.rp', err);
                 throw err;
             });
 
@@ -320,6 +349,7 @@ module.exports = class CWOMService {
         return new Promise(function (resolve, reject) {
 
             svc.getTurboActions(critOnly).then(function (actions) {
+                svc.logger.debug('getTurboActionList.getTurboActions', actions);
 
                 //console.log("::::::: got turbo actions! Total VM Actions: " + actions.filter(action => "VirtualMachine" === action.target.className).length + " | Total AS Actions: " + actions.filter(action => "ApplicationServer" === action.target.className).length);
                 //console.log("refreshing actions with critOnly = " + critOnly);
@@ -331,7 +361,7 @@ module.exports = class CWOMService {
                 resolve(actions)
                 //io.emit('refreshactions', { turboactions: htmlact, critOnly: myCrit, uniqueID: uniqueID });
 
-            }).catch(function (rej) { console.log("Promise 4 Failed! " + rej); });
+            }).catch(function (rej) { svc.logger.error('getTurboActionList.getTurboActions', rej); });
 
         });
     }
@@ -347,8 +377,9 @@ module.exports = class CWOMService {
         return new Promise(function (resolve, reject) {
 
             //console.log("getting turbo actions!");
-
+            svc.logger.debug('getTurboActions.Promise');
             svc.getTurboToken().then(async function (tokenret) {
+                svc.logger.debug('getTurboActions.getTurboToken',tokenret);
 
                 var bodyreturn = JSON.parse(tokenret.data);
                 var headerreturn = tokenret.headers;
@@ -356,11 +387,14 @@ module.exports = class CWOMService {
                 svc.authToken = bodyreturn.authToken;
                 var businessid = businessAppId || '';
                 svc.getSupplyChainEntities(businessid).then(async function (filtermap) {
+                    svc.logger.debug('getTurboActions.getTurboToken.getSupplyChainEntities',filtermap);
                     svc.getActionsForScope(businessid, filtermap).then(
                         async function (actions) {
+                            svc.logger.debug('getTurboActions.getTurboToken.getSupplyChainEntities.getActionsForScope',actions);
                             resolve(actions);
                         }
                     , function (error) {
+                        svc.logger.error('getTurboActions.getTurboToken.getSupplyChainEntities.getActionsForScope',error);
                         reject(error)
                     })
 
@@ -368,8 +402,8 @@ module.exports = class CWOMService {
 
 
             }, (error) => {
-                console.log(error);
-            }).catch(function (rej) { console.log("Promise 3 Failed! " + rej); });
+                svc.logger.error('getTurboActions', error);
+            }).catch(function (rej) { svc.logger.error('getTurboActions.catch', rej); });
 
         });
     }
@@ -388,12 +422,14 @@ module.exports = class CWOMService {
                 uri: turbourl,
                 headers: headers,
                 body: JSON.stringify({
-                    scopes: [scopeid],
-                    actionInput: { relatedEntityTypes: ["VirtualMachine", "ApplicationServer", "DatabaseServer", "Storage",  "PhysicalMachine"] }
+                    "scopes": [scopeid],
+                    "actionInput": { "relatedEntityTypes": ["VirtualMachine", "ApplicationServer", "DatabaseServer", "Storage",  "PhysicalMachine"] }
                 })
             };
 
             rp(options).then(function (ret) {
+
+                svc.logger.debug('getActionsForScope.rp',ret);
                 var actionMap = new Map();
                 var actionsret = [];
                 if (ret.length > 100) {
@@ -402,27 +438,30 @@ module.exports = class CWOMService {
                     for (var i = 0; i < jsonRet.length; i++) {
                         var ba = jsonRet[i];
                         var actions = ba.actions;
-                        for (var j = 0; j < actions.length; j++) {
-                            var action = actions[j];
-
-                            if (!actionMap.has(action.uuid)) {
-                                if (filtermap.has(action.target.uuid)) {
-                                    actionMap.set(action.uuid, true);
-                                    actionsret.push(new Action(action));
+                        if(actions) {
+                            for (var j = 0; j < actions.length; j++) {
+                                var action = actions[j];
+    
+                                if (!actionMap.has(action.uuid)) {
+                                    if (filtermap.has(action.target.uuid)) {
+                                        actionMap.set(action.uuid, true);
+                                        actionsret.push(new Action(action));
+                                    }
                                 }
                             }
                         }
+
                     }
                 }
 
 
                 resolve(actionsret);
             },(error) => {
-                
+                svc.logger.error('getActionsForScope.rp',error);
                 resolve([]);
             });
 
-        }, reject => {reject(error)}); // end Promise
+        }, reject => { reject(error)}); // end Promise
 
     }
     getSupplyChainEntities(uuid) {
@@ -443,6 +482,7 @@ module.exports = class CWOMService {
             };
 
             rp(options).then(function (ret) {
+                svc.logger.debug('getSupplyChainEntities.rp',ret);
                 var entityMap = new Map();
                 if (ret.length > 100) {
 
@@ -460,7 +500,7 @@ module.exports = class CWOMService {
                 }
                 resolve(entityMap);
             }).catch(function (err) {
-                console.log(JSON.stringify(err));
+                svc.logger.error('getSupplyChainEntities.rp',err);
                 throw err;
             });
 
@@ -520,6 +560,7 @@ module.exports = class CWOMService {
             };
 
             rp(options).then(function (ret) {
+                svc.logger.debug('getTurboVMAction.rp',ret);
                 if (ret.length > 100) {
                     var allVMActions = [];
                     var myactionreturn = JSON.parse(ret);
@@ -545,7 +586,7 @@ module.exports = class CWOMService {
 
                 } else { resolve(null); }
             }).catch(function (err) {
-                console.log(JSON.stringify(err));
+                svc.logger.error('getTurboVMAction.rp',err);
                 throw err;
             });
 
@@ -569,6 +610,7 @@ module.exports = class CWOMService {
             };
 
             rp(options).then(function (ret) {
+                svc.logger.debug('getTurboAppServerAction.rp',ret);
                 //console.log("====> Result: " + ret);
                 if (ret.length > 100) {
                     var allASActions = [];
@@ -588,7 +630,7 @@ module.exports = class CWOMService {
                 resolve(allASActions);
 
             }).catch(function (err) {
-                console.log(JSON.stringify(err));
+                svc.logger.error('getTurboAppServerAction.rp',err);
                 throw err;
             });
 

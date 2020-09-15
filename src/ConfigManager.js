@@ -134,6 +134,10 @@ exports.getDashboards = function(){
 exports.getLibraries = function(){
 	return libraries.libraries;
 }
+exports.getLogLevel = function() {
+	
+	return config.loglevel;
+}
 
 exports.getCWOMConfig = function(){
 	if(!config.cwom_config) {
