@@ -4,6 +4,8 @@ This is the code for the CWOM demo shown at IMPACT.  This is a custom web app bu
 
 When executing an action, it also removes the action but does not execute it since this code is meant for demo purposes.  There is work being done to get this to a full fledged field integration that a customer could use. The idea is a customer could host this custom web app and this would be loaded into the AppDynamics UI via an Iframe. The code is distributed as is.  
 
+Does not currently work in Internet Explorer
+
 ## Required Frameworks
 
 1. NodeJS v7 or above
