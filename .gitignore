@@ -17,3 +17,5 @@ views/_design
 CONFIG.BAK
 *.bak
 test.json
+cert.pem
+key.pem

@@ -138,7 +138,9 @@ exports.getLogLevel = function() {
 	
 	return config.loglevel;
 }
-
+exports.isLocalHttpsConfigured = function(){
+	return config.localhttps;
+}
 exports.getCWOMConfig = function(){
 	if(!config.cwom_config) {
 		config.cwom_config =  {
