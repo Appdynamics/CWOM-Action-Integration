@@ -19,3 +19,7 @@ CONFIG.BAK
 test.json
 cert.pem
 key.pem
+package-lock.json
+package-lock.json
+package.json
+src/CWOM/Target.js
