@@ -1,5 +1,5 @@
 <script id="_SVGIcon" type="text/x-jsrender">
-    {{if type == 'ApplicationServer'}}
+    {{if type == 'ApplicationServer' || type == 'ApplicationComponent'}}
         <svg id='iconPath' width=75px height=75px viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'>
             <path d='M15.5 2c.825 0 1.5.675 1.5 1.5v17c0 .825-.675 1.5-1.5 1.5h-7c-.825 0-1.5-.675-1.5-1.5v-17C7 2.675 7.675 2 8.5 2h7zM15 20V4H9v16h6zm5-16a1 1 0 0 1 1 1v14a1 1 0 1 1-2 0V5a1 1 0 0 1 1-1zM4 4a1 1 0 0 1 1 1v14a1 1 0 1 1-2 0V5a1 1 0 0 1 1-1zm6.5 3.75a.75.75 0 0 1 0-1.5h3a.75.75 0 0 1 0 1.5h-3zm0 3a.75.75 0 0 1 0-1.5h3a.75.75 0 0 1 0 1.5h-3zM12 18a1 1 0 1 1 0-2 1 1 0 0 1 0 2z'  
                 fill-rule='nonzero' 
@@ -79,6 +79,9 @@
             
         </div>
         <div>
+            {{if type == 'ApplicationComponent'}}
+            <small>Application<br/>Component</small>
+            {{/if}}
             {{if type == 'ApplicationServer'}}
                 <small>Application<br/>Server</small>
             {{else type == 'VirtualMachine'}}
@@ -96,42 +99,44 @@
 </script>
 
 <script id="_cwomIconPanel" type="text/x-jsrender">
-    <div class='col-12' style='display:contents;'>
-        <div class='col-9' style='display:inline-block;'>
-             <p class='h3'>{^{actionCount:actions ~critOnly}} Pending Actions - CWOM</p>
-        </div>
-        <div class='col-2' style='display:inline-block;padding: 0px;'>
-            <div class='custom-control custom-checkbox'><input type='checkbox' class='custom-control-input' data-link="~critOnly" id='critCheckbox' />
-               <label class='custom-control-label' for='critCheckbox'>Show Critical Only</label>
-            </div>
-        </div>
-    </div>
-    <div class='col-12' style='height:20px'>&nbsp;</div>
-    <div class='col-12' style='display:contents;'>
-        <div class='col-1' style='display:inline-block;'>&nbsp;</div>
-        {{for icons}}
-            {{include  tmpl="#_cwomIconComponent"/}}
-        {{/for}}
-        <div class='col-1' style='display:inline-block;'>&nbsp;</div>
-    </div>
-    <div class='col-12 headers' >
-      <div class='row'>
-      
-
-        {^{for actions filter=~actionFilter }}
-            {{include  tmpl="#_actionHeaderRecommendation"/}}
-        {{/for}}
+  <div class='col-12' style='display:contents;'>
+      <div class='col-9' style='display:inline-block;'>
+           <p class='h3'>{^{actionCount:actions ~critOnly}} Pending Actions - IWO</p>
       </div>
-    </div>
-        <div class='col-12' >
+      <div class='col-2' style='display:inline-block;padding: 0px;'>
+          <div class='custom-control custom-checkbox'><input type='checkbox' class='custom-control-input' data-link="~critOnly" id='critCheckbox' />
+             <label class='custom-control-label' for='critCheckbox'>Show Critical Only</label>
+          </div>
+      </div>
+  </div>
+  <div class='col-12' style='height:20px'>&nbsp;</div>
+  <div class='col-12' style='display:contents;'>
+      <div class='col-1' style='display:inline-block;'>&nbsp;</div>
+      {{for icons}}
+          {{include  tmpl="#_cwomIconComponent"/}}
+      {{/for}}
+      <div class='col-1' style='display:inline-block;'>&nbsp;</div>
+  </div>
+  <div class='col-12 headers' >
+    <div class='row'>
+    
 
-        {^{for actions filter=~actionDetailFilter }}
-            {{include  tmpl="#_itemDetail"/}}
-        {{/for}}
-        </div>
+      {^{for actions filter=~actionFilter }}
+          {{include  tmpl="#_actionHeaderRecommendation"/}}
+      {{/for}}
+    </div>
+  </div>
+      <div class='col-12' >
+
+      {^{for actions filter=~actionDetailFilter }}
+          {{include  tmpl="#_itemDetail"/}}
+      {{/for}}
+      </div>
 
 
 </script>
+
+<!-- action summary -->
 <script id="_actionHeaderRecommendation" type="text/x-jsrender">
      <div class='card {{if risk.severity === "CRITICAL" }}border-danger{{else }}border-secondary{{/if}} mb-3'>
        <div class='card-header-{{:risk.severity}}'>{{:risk.severity}}</div>
@@ -143,7 +148,7 @@
            data-toggle='list' href='#list-{{:uuid}}' role='tab' aria-controls='{{:uuid}}'>
            <div class='card-text'>
             <div>
-              <b>Action:</b> &nbsp;{{if actionType === 'DELETE' }}DELETE{{else}}{{actionDescription:newValue currentValue risk}}{{/if}}<br>
+              <b>Action:</b>&nbsp;{{if actionType === 'DELETE' }}DELETE{{else}}{{:actionType}}{{/if}}<br>
               <b> Target:</b> &nbsp; {{targetDisplay:target target.className}}<br>
               {{if actionType !== 'DELETE' }}<b> Resize from</b> {{getval:risk.reasonCommodity newValue currentValue}} <b>to</b> {{getval:risk.reasonCommodity newValue newValue}}<br/>{{/if}}
               <b> Reason:</b> &nbsp; {{:risk.subCategory}}
@@ -191,7 +196,7 @@
         <span class='classtitle'> {{:target.className}} </span>
       </div>
       <div class='col-12'>
-        <a href='{{:~root.server}}/u/app/#/view/main/{{urlEncoder:target.uuid}}' target='_new'>
+        <a href='{{:~root.server}}/app/#/view/main/{{urlEncoder:target.uuid}}' target='_new'>
           <span class='classname'> {{:target.displayName}} </span>
         </a>
       </div>
@@ -312,7 +317,7 @@
         <span class='classtitle'> ACTIONS </span>
       </div>
       <div class='col-12' style='margin-top:10px;'>
-        <a href='{{:~root.server}}/u/app/#/view/main/{{urlEncoder:target.uuid}}' target='_new'>
+        <a href='{{:~root.server}}/app/#/view/main/{{urlEncoder:target.uuid}}' target='_new'>
           <button type='button' class='btn btn-outline-primary waves-effect' style="min-width: 180px;">Drill
             Down</button>
         </a>

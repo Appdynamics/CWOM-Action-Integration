@@ -37,7 +37,7 @@ class CWOMPanelComponent extends BaseComponent {
             options.action = options.title;
         }
         options.hasChart = false;
-        options.icons = [{type: "ApplicationServer"},{type: "VirtualMachine"},{type: "Storage"},{type: "Host"},{type: "Database"}];
+        options.icons = [{type: "ApplicationComponent"},{type: "VirtualMachine"},{type: "Storage"},{type: "Host"},{type: "Database"}];
         //options.selectedFilter = 'none';
         super(options, null);
     }
@@ -79,7 +79,7 @@ class CWOMPanelComponent extends BaseComponent {
             hasActions: function(type, actions, critOnly) {
                 if(type && actions) {
                     var subactions = actions.filter(action => action.target.className === type);
-                    
+
                     if(critOnly) {
                         return subactions.filter(action => action.risk.severity === 'CRITICAL').length > 0
                     } else {
@@ -203,7 +203,7 @@ class CWOMPanelComponent extends BaseComponent {
                     return ret;
                 },
                 actionDescription: function (newValue, currentValue, risk) {
-                    return (newValue > currentValue ? "Scale Up" : "Scale Down") + " " + risk.reasonCommodity;
+                     return (newValue > currentValue ? "Scale Up" : "Scale Down") + " " + risk.reasonCommodity;
                 },
                 host: function (displayName) {
                     return displayName.substring(displayName.indexOf(",") + 1, displayName.indexOf("]"));

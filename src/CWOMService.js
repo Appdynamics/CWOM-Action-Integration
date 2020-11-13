@@ -33,7 +33,7 @@ module.exports = class CWOMService {
         var svc = this;
         svc.logger.debug('getTurboToken.Getting Turbo Token');
         return new Promise(function (resolve, reject) {
-            var turbourl = svc.config.turboserver + '/vmturbo/rest/login?disable_hateoas=true';
+            var turbourl = svc.config.turboserver + '/api/v3/login?disable_hateoas=true';
             var authorization = 'Basic ' + Buffer.from(`${svc.config.username}:${svc.config.password}`).toString("base64");
             var headers = { 'Authorization': authorization, 'Content-Type': 'multipart/form-data' };
             var params = { 'username': svc.config.username, 'password': svc.config.password };
@@ -73,7 +73,7 @@ module.exports = class CWOMService {
         var svc = this;
         svc.logger.silly('getActionsByScope');
         return new Promise(resolve => {
-            var turbourl = svc.config.turboserver + '/vmturbo/rest/actions';
+            var turbourl = svc.config.turboserver + '/api/v3/actions';
             var headers = {
                 'Content-Type': 'application/json;charset=UTF-8',
                 'Authorization': 'Bearer ' + svc.authToken
@@ -117,7 +117,7 @@ module.exports = class CWOMService {
         var svc = this;
         svc.logger.silly('getWidgets');
         return new Promise(resolve => {
-            var turbourl = svc.config.turboserver + '/vmturbo/rest/widgetsets?category=OVERVIEW&disable_hateoas=true&scope_type=Hybrid_BusinessApplication';
+            var turbourl = svc.config.turboserver + '/api/v3/widgetsets?category=OVERVIEW&disable_hateoas=true&scope_type=Hybrid_BusinessApplication';
             var headers = {
                 'Content-Type': 'application/json;charset=UTF-8',
                 'Authorization': 'Bearer ' + svc.authToken
@@ -160,7 +160,7 @@ module.exports = class CWOMService {
     getGroup() {
         var svc = this;
         return new Promise(resolve => {
-            var turbourl = svc.config.turboserver + '/vmturbo/rest/groups/';
+            var turbourl = svc.config.turboserver + '/api/v3/rest/groups/';
             var headers = {
                 'Content-Type': 'application/json;charset=UTF-8',
                 'Authorization': 'Bearer ' + svc.authToken
@@ -206,7 +206,7 @@ module.exports = class CWOMService {
     }
     getBusinessApplicationActions() {
         var svc = this;
-        return new Promise(function (resolve, reject) {
+          return new Promise(function (resolve, reject) {
             svc.logger.debug('getBusinessApplicationActions.init');
             svc.getTurboToken().then(async function (tokenret) {
                 svc.logger.debug('getBusinessApplicationActions.getTurboToken',tokenret);
@@ -229,8 +229,8 @@ module.exports = class CWOMService {
     getAllBusinessAppEntities() {
 
         var svc = this;
-        return new Promise(resolve => {
-            var turbourl = svc.config.turboserver + '/vmturbo/rest/entities/' + svc.config.businessApplicationId + "/supplychains?entity_states=&detail_type=entity&health=true";
+       return new Promise(resolve => {
+            var turbourl = svc.config.turboserver + '/api/v3/entities/' + svc.config.businessApplicationId + "/supplychains?entity_states=&detail_type=entity&health=true";
             var headers = {
                 'Content-Type': 'application/json;charset=UTF-8',
                 'Authorization': 'Bearer ' + svc.authToken
@@ -306,7 +306,7 @@ module.exports = class CWOMService {
     getTurboGroupActions(uuid, entityidlist) {
         var svc = this;
         return new Promise(resolve => {
-            var turbourl = svc.config.turboserver + '/vmturbo/rest/groups/' + uuid + "/actions";
+            var turbourl = svc.config.turboserver + '/api/v3/rest/groups/' + uuid + "/actions";
             var headers = {
                 'Content-Type': 'application/json;charset=UTF-8',
                 'Authorization': 'Bearer ' + svc.authToken
@@ -410,7 +410,7 @@ module.exports = class CWOMService {
     getActionsForScope(scopeid, filtermap) {
         var svc = this;
         return new Promise(resolve => {
-            var turbourl = svc.config.turboserver + '/api/v2/actions';
+            var turbourl = svc.config.turboserver + '/api/v3/actions';
             var headers = {
                 'Content-Type': 'application/json;charset=UTF-8',
                 'Authorization': 'Bearer ' + svc.authToken
@@ -423,7 +423,7 @@ module.exports = class CWOMService {
                 headers: headers,
                 body: JSON.stringify({
                     "scopes": [scopeid],
-                    "actionInput": { "relatedEntityTypes": ["VirtualMachine", "ApplicationServer", "DatabaseServer", "Storage",  "PhysicalMachine"] }
+                    "actionInput": { "relatedEntityTypes": ["VirtualMachine","ApplicationComponent","Storage","Database","PhysicalMachine" ] }
                 })
             };
 
@@ -468,7 +468,7 @@ module.exports = class CWOMService {
 
         var svc = this;
         return new Promise(resolve => {
-            var turbourl = svc.config.turboserver + '/api/v2/supplychains?uuids=' + uuid + '&detail_type=entity&health=true';
+            var turbourl = svc.config.turboserver + '/api/v3/supplychains?uuids=' + uuid + '&detail_type=entity&health=true';
             var headers = {
                 'Content-Type': 'application/json;charset=UTF-8',
                 'Authorization': 'Bearer ' + svc.authToken
@@ -511,7 +511,7 @@ module.exports = class CWOMService {
         var svc = this;
         return new Promise(resolve => {
             var asList = [];
-            var turbourl = svc.config.turboserver + '/vmturbo/rest/entities/' + uuid;
+            var turbourl = svc.config.turboserver + '/api/v3/entities/' + uuid;
             var headers = {
                 'Content-Type': 'application/json;charset=UTF-8',
                 'Authorization': 'Bearer ' + svc.authToken
@@ -546,7 +546,7 @@ module.exports = class CWOMService {
     getTurboVMAction(uuid, critOnly) {
         var svc = this;
         return new Promise(resolve => {
-            var turbourl = svc.config.turboserver + '/vmturbo/rest/entities/' + uuid + "/actions";
+            var turbourl = svc.config.turboserver + '/api/v3/entities/' + uuid + "/actions";
             var headers = {
                 'Content-Type': 'application/json;charset=UTF-8',
                 'Authorization': 'Bearer ' + svc.authToken
@@ -566,7 +566,7 @@ module.exports = class CWOMService {
                     var myactionreturn = JSON.parse(ret);
 
                     for (var i = 0; i < myactionreturn.length; i++) {
-                        var thisAction = new Action(myactionreturn[i]);
+                        var thisAction = new Action(myactionreturn[i]);                       
                         if (thisAction.target.className === "VirtualMachine") {
 
                             if (!critOnly) {
@@ -578,7 +578,7 @@ module.exports = class CWOMService {
                                 allVMActions.push(thisAction);
                             }
                         }
-
+                        
                         //else { resolve(null); }
                     }
                     //resolve(allActions);
@@ -596,7 +596,7 @@ module.exports = class CWOMService {
     getTurboAppServerAction(uuid, critOnly) {
         var svc = this;
         return new Promise(resolve => {
-            var turbourl = svc.config.turboserver + '/vmturbo/rest/entities/' + uuid + '/actions';
+            var turbourl = svc.config.turboserver + '/api/v3/entities/' + uuid + '/actions';
             var headers = {
                 'Content-Type': 'application/json;charset=UTF-8',
                 'Authorization': 'Bearer ' + svc.authToken
