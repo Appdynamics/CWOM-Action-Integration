@@ -1,6 +1,6 @@
 
-# CWOM Action List
-This is the code for the CWOM demo shown at IMPACT.  This is a custom web app built specifically to highlight CWOM and AppDynamics working together.  As such, this is meant for demo purposes and the art of the possible. The demo is custom code and not an officially supported product of CWOM or Appdynamics. 
+# IWO Action List
+This is the code for the IWO demo shown at IMPACT.  This is a custom web app built specifically to highlight IWO and AppDynamics working together.  As such, this is meant for demo purposes and the art of the possible. The demo is custom code and not an officially supported product of IWO or Appdynamics. 
 
 When executing an action, it also removes the action but does not execute it since this code is meant for demo purposes.  There is work being done to get this to a full fledged field integration that a customer could use. The idea is a customer could host this custom web app and this would be loaded into the AppDynamics UI via an Iframe. The code is distributed as is.  
 
