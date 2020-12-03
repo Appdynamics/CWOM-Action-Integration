@@ -8,16 +8,13 @@ router.get('/actions/:id', function(req, res) {
     var id = req.params.id;
     cwomsvc.getTurboActions(id).then((actions) => {
         var results  = {
-            cwomserver: cwomsvc.config.turboserver,
+            cwomserver: cwomsvc.config.iwoserver,
             actions : actions
         }
         res.status(200).send(results);
     } , (err) => {
         res.status(500).send({});
     });
-    
-
-	
 });
 
 router.get('/mockData', function(req, res) {

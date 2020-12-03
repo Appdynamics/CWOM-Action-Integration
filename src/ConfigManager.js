@@ -156,3 +156,9 @@ exports.getCWOMConfig = function(){
 	}
 	return config.cwom_config;
 }
+exports.getIWOConfig = function(){
+	if(!config.iwo_config) {
+		// implement
+	}
+	return config.iwo_config;
+}

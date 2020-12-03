@@ -13,6 +13,7 @@
     "@fortawesome/fontawesome-free": "^5.10.2",
     "animsition": "^4.0.2",
     "async": "^2.6.3",
+    "base-64": "^1.0.0",
     "billboard.js": "^1.10.2",
     "body-parser": "^1.19.0",
     "bootstrap": "^4.3.1",

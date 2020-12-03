@@ -5,6 +5,7 @@ var Risk = require('./Risk.js');
 var Template = require('./Template.js');
 var Stat = require('./Stat.js');
 var Location = require('./Location.js');
+var base64 = require('base-64');
 
 module.exports = class Action {
     constructor(action) {
@@ -43,6 +44,8 @@ module.exports = class Action {
 
         this.actionid = action.actionid || 0;
         this.environmentType = action.environmentType || '';
+        this.actionURL = base64.encode("/view/main/"+ this.currentEntity.uuid +"/actions");
+        this.entityURL = base64.encode("/view/main/"+ this.currentEntity.uuid +"/overview");
     }
 
 }

@@ -21,16 +21,16 @@ References:
 1. Change into the directory: `cd CWOM-Action-Integration`
 1. Download npm dependencies: `npm install`
 1. Create a config.json file in the root directory with the following :
-
+1. Create two file iwo_private_key.pem and iwo_public_key.txt in the root directory. you can get those value in Intersight.
 ```
 {
 	"localport":3000,
     "https":true,
-	"cwom_config": {
-		"turboserver": "https://my.turbo.server.com",
-		"username": "<username>",
-		"password": "<password>"
-	}
+	"iwo_config": {
+		"iwoServer": 		"https://intersight.com",
+		"iwoAPIPath": 		"/wo/api/v3",
+		"iwoViewEntityURL": "/view/main/"
+	},
 
 }
 ```
@@ -39,9 +39,9 @@ If you copy the above default text, you can still run the node.js server. cwom_c
 
 * `localport`: the port that the node.js server will be started on
 * `https`: use the https protocol
-* `turboserver`: url to the cwom instance
-* `username`: username of user that can pull actions via the API
-* `password`: password of user that can pull actions via the api
+* `iwoServer`: url to the IWO instance
+* `iwoAPIPath`: API path to pull data from IWO
+* `iwoViewEntityURL`: path to visualize entities in IWO
 
 
 6. Start node.js: `npm start`
@@ -53,7 +53,7 @@ If you copy the above default text, you can still run the node.js server. cwom_c
 # Documentation
 Example page with real action data: http://localhost:3000/views/examples/cwom.html?businessAppID=put_your_business_appid_here
 
-The easiest way to find the business appid is to open up the CWOM instance, click on search, click business applications, click on your business application.  The ID can be found in the URL.  
+The easiest way to find the business appid is to open up the IWO instance, click on search, click business applications, click on your business application.  The ID can be found in the URL (you must decode it as it's formatted in base64).  
 
 Example page with fake action data for demo purposes (if you don't have a cwom instance to hook into): http://localhost:3000/views/examples/cwomMockData.html
 

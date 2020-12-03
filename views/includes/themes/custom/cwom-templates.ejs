@@ -196,7 +196,8 @@
         <span class='classtitle'> {{:target.className}} </span>
       </div>
       <div class='col-12'>
-        <a href='{{:~root.server}}/app/#/view/main/{{urlEncoder:target.uuid}}' target='_new'>
+      
+        <a href='https://intersight.com/an/wo/home/?viewKey={{:entityURL}}' target='_new'>
           <span class='classname'> {{:target.displayName}} </span>
         </a>
       </div>
@@ -317,10 +318,11 @@
         <span class='classtitle'> ACTIONS </span>
       </div>
       <div class='col-12' style='margin-top:10px;'>
-        <a href='{{:~root.server}}/app/#/view/main/{{urlEncoder:target.uuid}}' target='_new'>
-          <button type='button' class='btn btn-outline-primary waves-effect' style="min-width: 180px;">Drill
+        <a href='https://intersight.com/an/wo/home/?viewKey={{:actionURL}}' target='_new'>
+          <button type='button' class='btn btn-outline-default waves-effect' style="min-width: 180px;">Drill
             Down</button>
         </a>
+
       </div>
       <div class='col-12'>
         <button type='button' class='btn btn-outline-default waves-effect' data-toggle='modal'
