@@ -23,3 +23,6 @@ package-lock.json
 package-lock.json
 package.json
 src/CWOM/Target.js
+src/CWOMService2.js
+iwo_private_key.pem
+iwo_public_key.txt
