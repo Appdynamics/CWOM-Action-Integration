@@ -119,7 +119,7 @@
   </div>
   <div class='col-12 headers' >
     <div class='row'>
-    
+
 
       {^{for actions filter=~actionFilter }}
           {{include  tmpl="#_actionHeaderRecommendation"/}}
@@ -150,7 +150,7 @@
             <div>
               <b>Action:</b>&nbsp;{{if actionType === 'DELETE' }}DELETE{{else}}{{:actionType}}{{/if}}<br>
               <b> Target:</b> &nbsp; {{targetDisplay:target target.className}}<br>
-              {{if actionType !== 'DELETE' }}<b> Resize from</b> {{getval:risk.reasonCommodity newValue currentValue}} <b>to</b> {{getval:risk.reasonCommodity newValue newValue}}<br/>{{/if}}
+              {{if actionType !== 'DELETE' }}<b> Resize from</b> {{getval:risk.reasonCommodity resizeToValue currentValue}}<b> to</b> {{getval:risk.reasonCommodity resizeToValue resizeToValue}}<br/>{{/if}}
               <b> Reason:</b> &nbsp; {{:risk.subCategory}}
             </div>
            </div>
@@ -288,7 +288,7 @@
             <span class='categorytext'> Shape: </span> <span class='actiondata'> {{:currentEntity.displayName}}</span>
           </div>
           <div class='col-12'>
-            <span class='categorytext'>{{:risk.reasonCommodity}}:</span> <span class='actiondata'> {{getval:risk.reasonCommodity newValue currentValue}} </span>
+            <span class='categorytext'>{{:risk.reasonCommodity}}:</span> <span class='actiondata'> {{getval:risk.reasonCommodity currentValue currentValue}}  </span>
           </div>
           <div class='col-12'>
             <span class='categorytext'> Location: </span> <span class='actiondatalocation'> {{:currentLocation.displayName}}</span>
@@ -303,7 +303,7 @@
             <span class='categorytext'> Shape: </span> <span class='actiondata'> {{:newEntity.displayName}}</span>
           </div>
           <div class='col-12'>
-            <span class='categorytext'> {{:risk.reasonCommodity}}: </span> <span class='actiondata'> {{getval:risk.reasonCommodity currentValue newValue}}  </span>
+            <span class='categorytext'> {{:risk.reasonCommodity}}: </span> <span class='actiondata'> {{getval:risk.reasonCommodity resizeToValue resizeToValue}}  </span>
           </div>
           <div class='col-12'>
             <span class='categorytext'> Location: </span> <span class='actiondatalocation'> {{:newLocation.displayName}} </span>
