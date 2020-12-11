@@ -26,3 +26,12 @@ src/CWOM/Target.js
 src/CWOMService2.js
 iwo_private_key.pem
 iwo_public_key.txt
+routes/cwom-route_wip.js
+views/examples/cwom_wip.html
+views/examples/map.html
+views/includes/themes/custom/cwom-templates.wip.ejs
+Dockerfile
+iwo_private_key.pem:rmlab
+iwo_public_key.txt:rmlab
+chart.html
+.dockerignore
