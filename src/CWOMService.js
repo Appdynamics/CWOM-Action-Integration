@@ -15,7 +15,7 @@ var severitys = ["CRITICAL", "MAJOR", "MINOR"];
 
 // Load Public/Private Keys
 const fs = require('fs');
-isHelper.setPublicKey(fs.readFileSync('./keys/iwo_public_key.txt', 'utf8'));
+isHelper.setPublicKey(fs.readFileSync('./keys/iwo_public_key.txt', 'utf8').replace(/\/n/g,""));
 isHelper.setPrivateKey(fs.readFileSync('./keys/iwo_private_key.pem', 'utf8'));
 
 
