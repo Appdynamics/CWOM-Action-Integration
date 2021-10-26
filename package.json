@@ -31,7 +31,7 @@
     "http-proxy-agent": "^2.1.0",
     "https-proxy-agent": "^2.2.4",
     "jquery": "^3.5.1",
-    "jquery-ui": "^1.12.1",
+    "jquery-ui": "^1.13.0",
     "jsviews": "^1.0.4",
     "leaflet": "^1.5.1",
     "log4js": "^0.6.38",
