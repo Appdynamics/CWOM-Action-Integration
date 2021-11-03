@@ -17,11 +17,11 @@ References:
 
 ## Installing
 
-1. Download the latest release https://github.com/Appdynamics/CWOM-Action-Integration
+1. Download the latest release https://github.com/Appdynamics/CWOM-Action-Integration/tree/iwo
 1. Change into the directory: `cd CWOM-Action-Integration`
 1. Download npm dependencies: `npm install`
 1. Create a config.json file in the root directory with the following :
-1. Create two file iwo_private_key.pem and iwo_public_key.txt in the root directory. you can get those value in Intersight.
+1. Create two file iwo_private_key.pem and iwo_public_key.txt under "keys" directory (e.g. /keys). you can get those value in Intersight.
 ```
 {
 	"localport":3000,
