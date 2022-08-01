@@ -30,7 +30,7 @@ References:
 		"iwoServer": 		"https://intersight.com",
 		"iwoAPIPath": 		"/wo/api/v3",
 		"iwoViewEntityURL": "/view/main/"
-	},
+	}
 
 }
 ```
